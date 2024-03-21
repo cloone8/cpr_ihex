@@ -230,24 +230,27 @@ fn main() {
     raw_records.iter().for_each(|record| {
         println!("{:?}", record);
     });
-    
+
     let records = raw_records
         .into_iter()
         .map(|record| IHexRecord::try_from(record).unwrap())
         .collect::<Vec<IHexRecord>>();
 
-    records.iter().for_each(|record| {
-        match record {
-            IHexRecord::Data(data) => {
-                println!("DataRecord - addr: {:x} data {:?}", data.naive_address, data.data.iter().map(|x| *x as char).collect::<Vec<char>>());
-            }
-            _ => println!("{:?}", record)
+    records.iter().for_each(|record| match record {
+        IHexRecord::Data(data) => {
+            println!(
+                "DataRecord - addr: {:x} data {:?}",
+                data.naive_address,
+                data.data.iter().map(|x| *x as char).collect::<Vec<char>>()
+            );
         }
+        _ => println!("{:?}", record),
     });
 
     println!("{}", records.len());
 
-    let datarecords: Vec<&DataRecord> = records.iter()
+    let datarecords: Vec<&DataRecord> = records
+        .iter()
         .filter_map(|record| {
             if let IHexRecord::Data(data) = record {
                 Some(data)
@@ -269,7 +272,10 @@ fn main() {
 
         fake_ram[start..end].copy_from_slice(&record.data);
     }
-    File::create("test_bin.bin").unwrap().write_all(&fake_ram).unwrap();
+    File::create("test_bin.bin")
+        .unwrap()
+        .write_all(&fake_ram)
+        .unwrap();
     // write!(, )
     // println!("{:?}", fake_ram);
 }
