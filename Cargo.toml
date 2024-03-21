@@ -7,7 +7,19 @@ version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
 
+[profile.release]
+codegen-units = 1
+lto = "fat"
+strip = "symbols"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = { version = "0.4.21", features = ["std", "release_max_level_info"] }
+clap = { version = "4.5.3", features = ["derive"] }
+eframe = "0.26.2"
 hex = "0.4.3"
+simplelog = "0.12.2"
+anyhow = "1.0.81"
+color-backtrace = "0.6.1"
+rfd = "0.14.1"
