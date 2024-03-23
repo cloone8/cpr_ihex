@@ -3,7 +3,7 @@ name = "cpr_ihex"
 description = "A graphical parser and editor for the Intel HEX binary format."
 authors = ["Wouter de Bruijn <wouter@wutru.io>"]
 homepage = "https://github.com/cloone8/cpr_ihex"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MPL-2.0"
 
@@ -26,3 +26,6 @@ simplelog = "0.12.2"
 anyhow = "1.0.81"
 color-backtrace = "0.6.1"
 rfd = "0.14.1"
+egui_extras = "0.26.2"
+strum = { version = "0.26.2", features = ["derive"] }
+itertools = "0.12.1"

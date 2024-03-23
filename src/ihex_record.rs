@@ -1,11 +1,22 @@
-use std::{error::Error, fmt::Display};
+use std::{
+    error::Error,
+    fmt::Display,
+    hash::{Hash, Hasher},
+};
 
 use crate::{raw_ihex_record::RawIHexRecord, to_u16_be, to_u32_be};
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DataRecord {
     pub naive_address: u16,
     pub data: Vec<u8>,
+}
+
+impl Hash for DataRecord {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.naive_address.hash(state);
+        self.data.hash(state);
+    }
 }
 
 #[derive(Debug)]
