@@ -1,8 +1,8 @@
 name: Release
 on:
+  workflow_dispatch:
   release:
     types: [published]
-  workflow_dispatch:
 jobs:
   publish:
     name: Publish to crates.io
@@ -17,6 +17,6 @@ jobs:
           toolchain: stable
           override: true
       - name: Publish
-        run: cargo publish --token ${CRATES_TOKEN}
+        run: cargo publish --token ${CRATES_TOKEN} --dry-run
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
