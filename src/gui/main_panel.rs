@@ -15,15 +15,15 @@ fn display_data(_record: &DataRecord, ui: &mut Ui) {
 }
 
 fn display_end_of_file(ui: &mut Ui) {
-    ui.label("End of file {NOT IMPLEMENTED YET}");
+    ui.label("End of file");
 }
 
 fn display_extended_segment_address(_record: &ExtendedSegmentAddressRecord, ui: &mut Ui) {
     ui.label("Extended segment address {NOT IMPLEMENTED YET}");
 }
 
-fn display_start_segment_address(_record: &StartSegmentAddressRecord, ui: &mut Ui) {
-    ui.label("Start segment address {NOT IMPLEMENTED YET}");
+fn display_start_segment_address(record: &StartSegmentAddressRecord, ui: &mut Ui) {
+    ui.label(format!("Start segment address: Code Segment: 0x{:x} - Instruction Pointer: 0x{:x}", record.code_segment, record.instruction_pointer));
 }
 
 fn display_extended_linear_address(_record: &ExtendedLinearAddressRecord, ui: &mut Ui) {
