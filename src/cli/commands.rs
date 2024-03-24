@@ -1,6 +1,10 @@
-use std::{error::Error, fmt::{self, Display, Formatter}, io::{stdout, BufWriter, Write}};
-use pretty_hex::pretty_hex;
 use crate::ihex_file::IHexFile;
+use pretty_hex::pretty_hex;
+use std::{
+    error::Error,
+    fmt::{self, Display, Formatter},
+    io::{stdout, BufWriter, Write},
+};
 
 use super::args::CLIArgs;
 

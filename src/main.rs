@@ -40,7 +40,10 @@ fn setup() -> Result<(CLIArgs, Option<File>)> {
     log::info!("Logger initialized");
 
     let file = match &args.file {
-        Some(file) => Some(File::open(file).map_err(|e| { anyhow!("I/O Error while opening provided file: {}", e) })?),
+        Some(file) => Some(
+            File::open(file)
+                .map_err(|e| anyhow!("I/O Error while opening provided file: {}", e))?,
+        ),
         None => None,
     };
 

@@ -83,7 +83,6 @@ fn display_data(i: usize, meta: &mut DataRecordDisplayMeta, record: &DataRecord,
 
         ui.label(data_str);
     });
-
 }
 
 fn display_extended_segment_address(record: &ExtendedSegmentAddressRecord, ui: &mut Ui) {

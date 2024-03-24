@@ -29,13 +29,15 @@ impl IHexFile {
     }
 
     pub fn data_bytes(&self) -> Vec<u8> {
-        let records: Vec<_> = self.records.iter()
+        let records: Vec<_> = self
+            .records
+            .iter()
             .filter_map(|record| match record {
                 IHexRecord::Data(data_record) => Some(data_record),
                 _ => None,
             })
             .collect();
-            
+
         let mut data = Vec::new();
 
         for record in records {
