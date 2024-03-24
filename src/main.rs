@@ -5,6 +5,7 @@ mod ihex_record;
 mod raw_ihex_record;
 mod utils;
 use anyhow::{anyhow, Result};
+use cli::{args::CLIArgs, commands::run_commands};
 use gui::Gui;
 use ihex_file::IHexFile;
 
@@ -17,10 +18,10 @@ use clap::Parser;
 use eframe::{egui::ViewportBuilder, NativeOptions};
 use simplelog::{ColorChoice, ConfigBuilder, TermLogger, TerminalMode};
 
-fn setup() -> Result<Option<File>> {
+fn setup() -> Result<(CLIArgs, Option<File>)> {
     color_backtrace::install();
 
-    let args = cli::CLIArgs::parse();
+    let args = cli::args::CLIArgs::parse();
 
     let logconfig = ConfigBuilder::new()
         .set_time_format_rfc3339()
@@ -38,22 +39,22 @@ fn setup() -> Result<Option<File>> {
 
     log::info!("Logger initialized");
 
-    match args.file {
-        Some(filepath) => {
-            Ok(Some(File::open(filepath).map_err(|e| {
-                anyhow!("I/O Error while opening provided file: {}", e)
-            })?))
-        }
-        None => Ok(None),
-    }
+    let file = match &args.file {
+        Some(file) => Some(File::open(file).map_err(|e| { anyhow!("I/O Error while opening provided file: {}", e) })?),
+        None => None,
+    };
+
+    Ok((args, file))
 }
 
 fn main() -> Result<()> {
-    let provided_file = setup().map_err(|e| anyhow!("Setup failed: {}", e))?;
+    let (args, provided_file) = setup().map_err(|e| anyhow!("Setup failed: {}", e))?;
     let parsed_file = match provided_file {
         Some(file) => Some(IHexFile::read(BufReader::new(file).lines())?),
         None => None,
     };
+
+    run_commands(&args, parsed_file.as_ref())?;
 
     let native_options = NativeOptions {
         viewport: ViewportBuilder::default()

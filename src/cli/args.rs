@@ -9,6 +9,14 @@ pub(crate) struct CLIArgs {
     #[arg()]
     pub file: Option<PathBuf>,
 
+    /// If set, the program will output a prettified hexdump of the file instead of opening the GUI.
+    #[arg(short = 'x', long)]
+    pub hexdump: bool,
+
+    /// If set, the program will output a binary dump of the file instead of opening the GUI.
+    #[arg(short, long)]
+    pub bindump: bool,
+
     /// The verbosity of the logger
     #[cfg(not(debug_assertions))]
     #[arg(value_enum, short, long, default_value_t = LogLevel::Warn)]
