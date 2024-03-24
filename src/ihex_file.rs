@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Error, Result};
+use itertools::Itertools;
 use std::io::{BufRead, Lines};
 
 use crate::{ihex_record::IHexRecord, raw_ihex_record::parse_ihex};
@@ -25,5 +26,25 @@ impl IHexFile {
             .collect::<Result<Vec<IHexRecord>, Error>>()?;
 
         Ok(IHexFile { records })
+    }
+
+    pub fn data_bytes(&self) -> Vec<u8> {
+        let records: Vec<_> = self.records.iter()
+            .filter_map(|record| match record {
+                IHexRecord::Data(data_record) => Some(data_record),
+                _ => None,
+            })
+            .collect();
+            
+        let mut data = Vec::new();
+
+        for record in records {
+            data.resize(record.naive_address as usize + record.data.len(), 0);
+            for (i, byte) in record.data.iter().enumerate() {
+                data[record.naive_address as usize + i] = *byte;
+            }
+        }
+
+        data
     }
 }
