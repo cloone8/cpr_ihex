@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Error, Result};
-use itertools::Itertools;
 use std::io::{BufRead, Lines};
 
 use crate::{ihex_record::IHexRecord, raw_ihex_record::parse_ihex};
@@ -29,6 +28,14 @@ impl IHexFile {
     }
 
     pub fn data_bytes(&self) -> Vec<u8> {
+        if self.records.iter().any(|record| matches!(record, IHexRecord::ExtendedLinearAddress(_))) {
+            panic!("Extended linear address records are not supported yet");
+        }
+
+        if self.records.iter().any(|record| matches!(record, IHexRecord::ExtendedSegmentAddress(_))) {
+            panic!("Extended segment address records are not supported yet");
+        }
+
         let records: Vec<_> = self
             .records
             .iter()
