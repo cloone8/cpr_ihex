@@ -28,11 +28,19 @@ impl IHexFile {
     }
 
     pub fn data_bytes(&self) -> Vec<u8> {
-        if self.records.iter().any(|record| matches!(record, IHexRecord::ExtendedLinearAddress(_))) {
+        if self
+            .records
+            .iter()
+            .any(|record| matches!(record, IHexRecord::ExtendedLinearAddress(_)))
+        {
             panic!("Extended linear address records are not supported yet");
         }
 
-        if self.records.iter().any(|record| matches!(record, IHexRecord::ExtendedSegmentAddress(_))) {
+        if self
+            .records
+            .iter()
+            .any(|record| matches!(record, IHexRecord::ExtendedSegmentAddress(_)))
+        {
             panic!("Extended segment address records are not supported yet");
         }
 

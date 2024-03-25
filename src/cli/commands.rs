@@ -43,9 +43,9 @@ impl From<std::io::Error> for RunCommandErr {
     }
 }
 
-fn check_file(file: Option<&IHexFile>) -> Result<(), RunCommandErr> {
+fn check_file(file: Option<&IHexFile>) -> Result<&IHexFile, RunCommandErr> {
     match file {
-        Some(_) => Ok(()),
+        Some(f) => Ok(f),
         None => Err(RunCommandErr::FileNotProvided),
     }
 }
@@ -53,17 +53,13 @@ fn check_file(file: Option<&IHexFile>) -> Result<(), RunCommandErr> {
 /// If any commands were specified in the args, run them.
 /// Returns true if a command was run, false otherwise.
 pub fn run_commands(args: &CLIArgs, file: Option<&IHexFile>) -> Result<bool, RunCommandErr> {
-    //TODO: Convert all the verification to Clap arg groups
-    //TODO: Make mutually exclusive
     if args.hexdump {
-        check_file(file)?;
-        run_hexdump(file.unwrap());
+        run_hexdump(check_file(file)?);
         return Ok(true);
     }
 
     if args.bindump {
-        check_file(file)?;
-        run_bindump(file.unwrap())?;
+        run_bindump(check_file(file)?)?;
         return Ok(true);
     }
 

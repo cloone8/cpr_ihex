@@ -10,11 +10,11 @@ pub(crate) struct CLIArgs {
     pub file: Option<PathBuf>,
 
     /// If set, the program will output a prettified hexdump of the file instead of opening the GUI.
-    #[arg(short = 'x', long)]
+    #[arg(short = 'x', long, group = "commands", requires = "file")]
     pub hexdump: bool,
 
     /// If set, the program will output a binary dump of the file instead of opening the GUI.
-    #[arg(short, long)]
+    #[arg(short, long, group = "commands", requires = "file")]
     pub bindump: bool,
 
     /// The verbosity of the logger
