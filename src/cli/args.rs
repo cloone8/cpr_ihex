@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum};
+use clap::{Args, Parser, ValueEnum};
 
 #[derive(Parser, Debug)]
 #[command(author, about, version)]
@@ -9,13 +9,8 @@ pub(crate) struct CLIArgs {
     #[arg()]
     pub file: Option<PathBuf>,
 
-    /// If set, the program will output a prettified hexdump of the file instead of opening the GUI.
-    #[arg(short = 'x', long, group = "commands", requires = "file")]
-    pub hexdump: bool,
-
-    /// If set, the program will output a binary dump of the file instead of opening the GUI.
-    #[arg(short, long, group = "commands", requires = "file")]
-    pub bindump: bool,
+    #[command(flatten)]
+    pub commands: CLICommands,
 
     /// The verbosity of the logger
     #[cfg(not(debug_assertions))]
@@ -26,6 +21,18 @@ pub(crate) struct CLIArgs {
     #[cfg(debug_assertions)]
     #[arg(value_enum, short, long, default_value_t = LogLevel::Info)]
     pub verbosity: LogLevel,
+}
+
+#[derive(Args, Debug)]
+#[group(id = "commands", multiple = false, requires = "file")]
+pub(crate) struct CLICommands {
+    /// If set, the program will output a prettified hexdump of the file instead of opening the GUI.
+    #[arg(short = 'x', long)]
+    pub hexdump: bool,
+
+    /// If set, the program will output a binary dump of the file instead of opening the GUI.
+    #[arg(short, long)]
+    pub bindump: bool,
 }
 
 #[derive(Debug, Clone, ValueEnum)]

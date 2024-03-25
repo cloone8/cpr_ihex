@@ -53,12 +53,12 @@ fn check_file(file: Option<&IHexFile>) -> Result<&IHexFile, RunCommandErr> {
 /// If any commands were specified in the args, run them.
 /// Returns true if a command was run, false otherwise.
 pub fn run_commands(args: &CLIArgs, file: Option<&IHexFile>) -> Result<bool, RunCommandErr> {
-    if args.hexdump {
+    if args.commands.hexdump {
         run_hexdump(check_file(file)?);
         return Ok(true);
     }
 
-    if args.bindump {
+    if args.commands.bindump {
         run_bindump(check_file(file)?)?;
         return Ok(true);
     }
