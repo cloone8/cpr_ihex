@@ -44,13 +44,13 @@ impl Default for DataRecordDisplayMeta {
     }
 }
 
-pub struct Gui {
-    file: Option<IHexFile>,
-    data_display_meta: HashMap<DataRecord, DataRecordDisplayMeta>,
+pub struct Gui<'a> {
+    file: Option<IHexFile<'a>>,
+    data_display_meta: HashMap<DataRecord<'a>, DataRecordDisplayMeta>,
     set_all_to_mode: DataDisplayMode,
 }
 
-impl Gui {
+impl Gui<'_> {
     pub fn new(_cc: &eframe::CreationContext, file: Option<IHexFile>) -> Self {
         Gui {
             file,
@@ -60,7 +60,7 @@ impl Gui {
     }
 }
 
-impl eframe::App for Gui {
+impl eframe::App for Gui<'_> {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {
             if self.file.is_none() {

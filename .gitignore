@@ -16,3 +16,4 @@ target/
 
 # Testing stuff
 *.bin
+*.hex

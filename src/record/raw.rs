@@ -7,9 +7,9 @@ use crate::to_u16_be;
 
 #[derive(Debug)]
 pub struct RawIHexRecord {
-    pub byte_count: u8,
-    pub address: u16,
-    pub record_type: u8,
+    pub reclen: u8,
+    pub load_offset: u16,
+    pub rectyp: u8,
     pub data: Vec<u8>,
     pub checksum: u8,
 }
@@ -22,7 +22,7 @@ fn add_u16(a: u8, b: u16) -> u8 {
 
 impl RawIHexRecord {
     pub fn generate_checksum(&self) -> u8 {
-        let non_data_sum = add_u16(self.byte_count.wrapping_add(self.record_type), self.address);
+        let non_data_sum = add_u16(self.reclen.wrapping_add(self.rectyp), self.load_offset);
         let data_sum = self
             .data
             .iter()
@@ -67,9 +67,9 @@ pub fn parse_ihex(value: &str) -> Result<RawIHexRecord, IHexParseError> {
     bytes.reverse(); // reverse back to original order
 
     Ok(RawIHexRecord {
-        byte_count,
-        address,
-        record_type,
+        reclen: byte_count,
+        load_offset: address,
+        rectyp: record_type,
         data: bytes,
         checksum,
     })

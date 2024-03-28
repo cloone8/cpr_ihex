@@ -1,13 +1,12 @@
 mod cli;
-mod gui;
-mod ihex_file;
-mod ihex_record;
-mod raw_ihex_record;
+// mod gui;
+mod record;
 mod utils;
 use anyhow::{anyhow, Result};
 use cli::{args::CLIArgs, commands::run_commands};
-use gui::Gui;
-use ihex_file::IHexFile;
+use record::file::IHexFile;
+// use gui::Gui;
+
 
 use std::{
     fs::File,
@@ -59,18 +58,18 @@ fn main() -> Result<()> {
 
     run_commands(&args, parsed_file.as_ref())?;
 
-    let native_options = NativeOptions {
-        viewport: ViewportBuilder::default()
-            .with_title("CPR IHEX - Intel HEX Parser and Manipulator"),
-        ..Default::default()
-    };
+    // let native_options = NativeOptions {
+    //     viewport: ViewportBuilder::default()
+    //         .with_title("CPR IHEX - Intel HEX Parser and Manipulator"),
+    //     ..Default::default()
+    // };
 
-    eframe::run_native(
-        "io.wutru.cpr_ihex",
-        native_options,
-        Box::new(move |cc| Box::new(Gui::new(cc, parsed_file))),
-    )
-    .expect("Could not run GUI");
+    // eframe::run_native(
+    //     "io.wutru.cpr_ihex",
+    //     native_options,
+    //     Box::new(move |cc| Box::new(Gui::new(cc, parsed_file))),
+    // )
+    // .expect("Could not run GUI");
 
     Ok(())
 }

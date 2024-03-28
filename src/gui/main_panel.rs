@@ -86,7 +86,7 @@ fn display_data(i: usize, meta: &mut DataRecordDisplayMeta, record: &DataRecord,
 }
 
 fn display_extended_segment_address(record: &ExtendedSegmentAddressRecord, ui: &mut Ui) {
-    ui.label(format!("Segment Base Address: {:x}", record.segment_base));
+    ui.label(format!("Base Address: 0x{:x}", record.segment_base));
 }
 
 fn display_start_segment_address(record: &StartSegmentAddressRecord, ui: &mut Ui) {
