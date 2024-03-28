@@ -1,9 +1,16 @@
 use anyhow::Result;
-use std::{fmt::Display, io::{BufRead, Lines}};
+use std::{
+    fmt::Display,
+    io::{BufRead, Lines},
+};
 
 use crate::{to_u16_be, to_u32_be};
 
-use super::{raw::{parse_ihex, RawIHexRecord}, DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord, StartLinearAddressRecord, StartSegmentAddressRecord};
+use super::{
+    raw::{parse_ihex, RawIHexRecord},
+    DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord,
+    StartLinearAddressRecord, StartSegmentAddressRecord,
+};
 
 macro_rules! expect_length {
     ($nu:expr, $len:expr) => {
@@ -51,9 +58,13 @@ impl IHexFile {
 
         for record in &self.records {
             match record {
-                IHexRecord::ExtendedSegmentAddress(_) => filetype = filetype.max(IHexFileType::IHex16),
+                IHexRecord::ExtendedSegmentAddress(_) => {
+                    filetype = filetype.max(IHexFileType::IHex16)
+                }
                 IHexRecord::StartSegmentAddress(_) => filetype = filetype.max(IHexFileType::IHex16),
-                IHexRecord::ExtendedLinearAddress(_) => filetype = filetype.max(IHexFileType::IHex32),
+                IHexRecord::ExtendedLinearAddress(_) => {
+                    filetype = filetype.max(IHexFileType::IHex32)
+                }
                 IHexRecord::StartLinearAddress(_) => filetype = filetype.max(IHexFileType::IHex32),
                 _ => {}
             }
@@ -83,7 +94,9 @@ impl IHexFile {
             raw_records.push(record);
         }
 
-        let mut ihex_file = IHexFile { records: Vec::with_capacity(raw_records.len()) };
+        let mut ihex_file = IHexFile {
+            records: Vec::with_capacity(raw_records.len()),
+        };
         let mut bases = BaseAddrs {
             segment: None,
             linear: None,
@@ -134,7 +147,11 @@ impl IHexFile {
         data
     }
 
-    fn parse_and_append(&mut self, value: RawIHexRecord, bases: &mut BaseAddrs) -> Result<(), InvalidIHexRecordError> {
+    fn parse_and_append(
+        &mut self,
+        value: RawIHexRecord,
+        bases: &mut BaseAddrs,
+    ) -> Result<(), InvalidIHexRecordError> {
         if !value.checksum_valid() {
             return Err(InvalidIHexRecordError::Checksum);
         }
@@ -150,11 +167,9 @@ impl IHexFile {
             2 => {
                 expect_length!(value.data, 2);
                 let segment_base = to_u16_be!(value.data);
-                IHexRecord::ExtendedSegmentAddress(
-                    ExtendedSegmentAddressRecord {
-                        segment_base: (segment_base as usize) * 16,
-                    },
-                )
+                IHexRecord::ExtendedSegmentAddress(ExtendedSegmentAddressRecord {
+                    segment_base: (segment_base as usize) * 16,
+                })
             }
             3 => {
                 expect_length!(value.data, 4);
@@ -168,20 +183,16 @@ impl IHexFile {
             4 => {
                 expect_length!(value.data, 2);
                 let address_base = to_u16_be!(value.data);
-                IHexRecord::ExtendedLinearAddress(
-                    ExtendedLinearAddressRecord { address_base },
-                )
+                IHexRecord::ExtendedLinearAddress(ExtendedLinearAddressRecord { address_base })
             }
             5 => {
                 expect_length!(value.data, 4);
 
                 let entry_point = to_u32_be!(value.data);
-                IHexRecord::StartLinearAddress(StartLinearAddressRecord {
-                    entry_point,
-                })
+                IHexRecord::StartLinearAddress(StartLinearAddressRecord { entry_point })
             }
             _ => return Err(InvalidIHexRecordError::RecordType),
-        };      
+        };
 
         match rec {
             IHexRecord::ExtendedSegmentAddress(ref addr) => {

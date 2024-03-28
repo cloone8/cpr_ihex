@@ -11,7 +11,6 @@ use strum::EnumIter;
 
 use crate::record::{file::IHexFile, DataRecord, IHexRecord};
 
-
 #[derive(EnumIter, PartialEq, Eq, Clone)]
 enum DataDisplayMode {
     Bytes,
@@ -51,10 +50,18 @@ impl IHexRecordDisplayMeta {
         match record {
             IHexRecord::Data(_) => matches!(self, IHexRecordDisplayMeta::Data { .. }),
             IHexRecord::EndOfFile => matches!(self, IHexRecordDisplayMeta::EndOfFile),
-            IHexRecord::ExtendedSegmentAddress(_) => matches!(self, IHexRecordDisplayMeta::ExtendedSegmentAddress),
-            IHexRecord::StartSegmentAddress(_) => matches!(self, IHexRecordDisplayMeta::StartSegmentAddress),
-            IHexRecord::ExtendedLinearAddress(_) => matches!(self, IHexRecordDisplayMeta::ExtendedLinearAddress),
-            IHexRecord::StartLinearAddress(_) => matches!(self, IHexRecordDisplayMeta::StartLinearAddress),
+            IHexRecord::ExtendedSegmentAddress(_) => {
+                matches!(self, IHexRecordDisplayMeta::ExtendedSegmentAddress)
+            }
+            IHexRecord::StartSegmentAddress(_) => {
+                matches!(self, IHexRecordDisplayMeta::StartSegmentAddress)
+            }
+            IHexRecord::ExtendedLinearAddress(_) => {
+                matches!(self, IHexRecordDisplayMeta::ExtendedLinearAddress)
+            }
+            IHexRecord::StartLinearAddress(_) => {
+                matches!(self, IHexRecordDisplayMeta::StartLinearAddress)
+            }
         }
     }
 
@@ -78,11 +85,11 @@ struct DataTabMeta {
 }
 
 enum MainPanelTab {
-    Data
+    Data,
 }
 
 struct MainPanelMeta {
-    data: DataTabMeta
+    data: DataTabMeta,
 }
 
 pub struct MainPanel {
@@ -108,7 +115,11 @@ impl Gui {
     }
 
     pub fn file_opened(&mut self, file: IHexFile) {
-        let record_meta: Vec<_> = file.records.iter().map(IHexRecordDisplayMeta::default_for).collect();
+        let record_meta: Vec<_> = file
+            .records
+            .iter()
+            .map(IHexRecordDisplayMeta::default_for)
+            .collect();
         *self = Gui::MainPanel(MainPanel {
             file,
             tab: MainPanelTab::Data,
@@ -124,11 +135,9 @@ impl Gui {
 
 impl eframe::App for Gui {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
-        CentralPanel::default().show(ctx, |ui| {
-            match self {
-                Gui::OpenFile => open_file::gui(self, ctx, frame, ui),
-                Gui::MainPanel(main_panel) => main_panel::gui(self, ctx, frame, ui)
-            }
+        CentralPanel::default().show(ctx, |ui| match self {
+            Gui::OpenFile => open_file::gui(self, ctx, frame, ui),
+            Gui::MainPanel(main_panel) => main_panel::gui(self, ctx, frame, ui),
         });
     }
 }

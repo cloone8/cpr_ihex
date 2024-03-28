@@ -1,16 +1,22 @@
+use core::panic;
 use eframe::{
     egui::{ComboBox, Context, Ui},
     Frame,
 };
 use egui_extras::{Column, TableBuilder, TableRow};
 use itertools::Itertools;
-use core::panic;
 use std::{collections::HashMap, hash::Hash};
 use strum::IntoEnumIterator;
 
-use crate::record::{file::IHexFile, DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord, StartLinearAddressRecord, StartSegmentAddressRecord};
+use crate::record::{
+    file::IHexFile, DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord,
+    IHexRecord, StartLinearAddressRecord, StartSegmentAddressRecord,
+};
 
-use super::{DataDisplayMeta, DataDisplayMode, DataTabMeta, Gui, IHexRecordDisplayMeta, MainPanel, MainPanelTab};
+use super::{
+    DataDisplayMeta, DataDisplayMode, DataTabMeta, Gui, IHexRecordDisplayMeta, MainPanel,
+    MainPanelTab,
+};
 
 fn display_mode_combobox(id: impl Hash, curr: &mut DataDisplayMode, ui: &mut Ui) {
     ComboBox::from_id_source(id)
@@ -138,7 +144,7 @@ fn display_record(
     });
 
     row.col(|ui| match record {
-            IHexRecord::Data(data) => {
+        IHexRecord::Data(data) => {
             let meta_for_rec = get_variant_or_panic!(meta, IHexRecordDisplayMeta::Data(data), data);
             display_data(i, meta_for_rec, data, ui)
         }

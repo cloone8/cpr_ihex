@@ -1,7 +1,6 @@
 pub mod file;
 pub mod raw;
 
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DataRecord {
     segment_address: Option<ExtendedSegmentAddressRecord>,
