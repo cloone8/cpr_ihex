@@ -1,7 +1,6 @@
 pub mod file;
 pub mod raw;
 
-use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DataRecord {
@@ -9,13 +8,6 @@ pub struct DataRecord {
     linear_address: Option<ExtendedLinearAddressRecord>,
     pub naive_address: u16,
     pub data: Vec<u8>,
-}
-
-impl Hash for DataRecord {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.naive_address.hash(state);
-        self.data.hash(state);
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

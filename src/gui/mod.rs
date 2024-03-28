@@ -9,7 +9,8 @@ use eframe::{
 };
 use strum::EnumIter;
 
-use crate::{ihex_file::IHexFile, ihex_record::DataRecord};
+use crate::record::{file::IHexFile, DataRecord, IHexRecord};
+
 
 #[derive(EnumIter, PartialEq, Eq, Clone)]
 enum DataDisplayMode {
@@ -44,31 +45,99 @@ impl Default for DataRecordDisplayMeta {
     }
 }
 
-pub struct Gui<'a> {
-    file: Option<IHexFile<'a>>,
-    data_display_meta: HashMap<DataRecord<'a>, DataRecordDisplayMeta>,
-    set_all_to_mode: DataDisplayMode,
+enum IHexRecordDisplayMeta {
+    Data {
+        displaymode: DataDisplayMode,
+    },
+    EndOfFile,
+    ExtendedSegmentAddress,
+    StartSegmentAddress,
+    ExtendedLinearAddress,
+    StartLinearAddress,
 }
 
-impl Gui<'_> {
-    pub fn new(_cc: &eframe::CreationContext, file: Option<IHexFile>) -> Self {
-        Gui {
-            file,
-            data_display_meta: HashMap::new(),
-            set_all_to_mode: DataDisplayMode::Bytes,
+impl IHexRecordDisplayMeta {
+    fn check_matches(&self, record: &IHexRecord) -> bool {
+        match record {
+            IHexRecord::Data(_) => matches!(self, IHexRecordDisplayMeta::Data { .. }),
+            IHexRecord::EndOfFile => matches!(self, IHexRecordDisplayMeta::EndOfFile),
+            IHexRecord::ExtendedSegmentAddress(_) => matches!(self, IHexRecordDisplayMeta::ExtendedSegmentAddress),
+            IHexRecord::StartSegmentAddress(_) => matches!(self, IHexRecordDisplayMeta::StartSegmentAddress),
+            IHexRecord::ExtendedLinearAddress(_) => matches!(self, IHexRecordDisplayMeta::ExtendedLinearAddress),
+            IHexRecord::StartLinearAddress(_) => matches!(self, IHexRecordDisplayMeta::StartLinearAddress),
+        }
+    }
+
+    fn default_for(record: &IHexRecord) -> Self {
+        match record {
+            IHexRecord::Data(_) => IHexRecordDisplayMeta::Data {
+                displaymode: DataDisplayMode::Bytes,
+            },
+            IHexRecord::EndOfFile => IHexRecordDisplayMeta::EndOfFile,
+            IHexRecord::ExtendedSegmentAddress(_) => IHexRecordDisplayMeta::ExtendedSegmentAddress,
+            IHexRecord::StartSegmentAddress(_) => IHexRecordDisplayMeta::StartSegmentAddress,
+            IHexRecord::ExtendedLinearAddress(_) => IHexRecordDisplayMeta::ExtendedLinearAddress,
+            IHexRecord::StartLinearAddress(_) => IHexRecordDisplayMeta::StartLinearAddress,
         }
     }
 }
 
-impl eframe::App for Gui<'_> {
+struct DataTabMeta {
+    record_meta: Vec<IHexRecordDisplayMeta>,
+    set_all_to_mode: DataDisplayMode,
+}
+
+enum MainPanelTab {
+    Data
+}
+
+struct MainPanelMeta {
+    data: DataTabMeta
+}
+
+pub struct MainPanel {
+    file: IHexFile,
+    tab: MainPanelTab,
+    meta: MainPanelMeta,
+}
+
+pub enum Gui {
+    OpenFile,
+    MainPanel(MainPanel),
+}
+
+impl Gui {
+    pub fn new(_cc: &eframe::CreationContext, file: Option<IHexFile>) -> Self {
+        let mut gui = Gui::OpenFile;
+
+        if let Some(file) = file {
+            gui.file_opened(file)
+        }
+
+        gui
+    }
+
+    pub fn file_opened(&mut self, file: IHexFile) {
+        *self = Gui::MainPanel(MainPanel {
+            file,
+            tab: MainPanelTab::Data,
+            meta: MainPanelMeta {
+                data: DataTabMeta {
+                    record_meta: file.records.iter().map(|r| IHexRecordDisplayMeta::default_for(r)).collect(),
+                    set_all_to_mode: DataDisplayMode::Bytes,
+                },
+            },
+        });
+    }
+}
+
+impl eframe::App for Gui {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            if self.file.is_none() {
-                open_file::gui(self, ctx, frame, ui);
-                return;
+            match self {
+                Gui::OpenFile => open_file::gui(self, ctx, frame, ui),
+                Gui::MainPanel(main_panel) => main_panel::gui(self, ctx, frame, ui)
             }
-
-            main_panel::gui(self, ctx, frame, ui);
         });
     }
 }

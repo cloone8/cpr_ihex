@@ -2,6 +2,7 @@ mod cli;
 // mod gui;
 mod record;
 mod utils;
+mod gui;
 use anyhow::{anyhow, Result};
 use cli::{args::CLIArgs, commands::run_commands};
 use record::file::IHexFile;

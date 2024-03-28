@@ -3,12 +3,13 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-use crate::ihex_file::IHexFile;
 use eframe::{
     egui::{Context, Ui},
     Frame,
 };
 use rfd::FileDialog;
+
+use crate::record::file::IHexFile;
 
 use super::Gui;
 
@@ -35,7 +36,7 @@ pub(super) fn gui(gui: &mut Gui, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui
                         match parsed {
                             Ok(parsed) => {
                                 log::info!("File parsed successfully");
-                                gui.file = Some(parsed);
+                                gui.file_opened(parsed);
                             }
                             Err(e) => log::error!("Could not parse file: {}", e),
                         }
