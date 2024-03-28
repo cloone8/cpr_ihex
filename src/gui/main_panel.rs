@@ -4,15 +4,13 @@ use eframe::{
 };
 use egui_extras::{Column, TableBuilder, TableRow};
 use itertools::Itertools;
+use core::panic;
 use std::{collections::HashMap, hash::Hash};
 use strum::IntoEnumIterator;
 
-use crate::ihex_record::{
-    DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord,
-    StartLinearAddressRecord, StartSegmentAddressRecord,
-};
+use crate::record::{file::IHexFile, DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord, StartLinearAddressRecord, StartSegmentAddressRecord};
 
-use super::{DataDisplayMode, DataRecordDisplayMeta, Gui};
+use super::{DataDisplayMeta, DataDisplayMode, DataTabMeta, Gui, IHexRecordDisplayMeta, MainPanel, MainPanelTab};
 
 fn display_mode_combobox(id: impl Hash, curr: &mut DataDisplayMode, ui: &mut Ui) {
     ComboBox::from_id_source(id)
@@ -64,16 +62,16 @@ fn numvec_as_utf16_string(data: &[u8], endian: Endian) -> String {
     format!("[{}]", String::from_utf16_lossy(&utf16_data))
 }
 
-fn display_data(i: usize, meta: &mut DataRecordDisplayMeta, record: &DataRecord, ui: &mut Ui) {
+fn display_data(i: usize, meta: &mut DataDisplayMeta, record: &DataRecord, ui: &mut Ui) {
     ui.horizontal(|ui| {
         ui.label(format!("Address: 0x{:x}", record.naive_address));
         ui.add_space(5.0);
         ui.label(format!("{} bytes", record.data.len()));
         ui.add_space(5.0);
 
-        display_mode_combobox(i, &mut meta.display_mode, ui);
+        display_mode_combobox(i, &mut meta.displaymode, ui);
 
-        let data_str = match meta.display_mode {
+        let data_str = match meta.displaymode {
             DataDisplayMode::Bytes => numvec_as_hex_string(&record.data),
             DataDisplayMode::Chars => numvec_as_char_string(&record.data),
             DataDisplayMode::Utf8 => numvec_as_utf8_string(&record.data),
@@ -116,8 +114,17 @@ const fn record_type_name(record: &IHexRecord) -> &'static str {
     }
 }
 
+macro_rules! get_variant_or_panic {
+    ($enum:expr, $variant:pat, $varname:expr) => {
+        match $enum {
+            $variant => $varname,
+            _ => panic!("Mismatched record type"),
+        }
+    };
+}
+
 fn display_record(
-    meta: &mut HashMap<DataRecord, DataRecordDisplayMeta>,
+    meta: &mut IHexRecordDisplayMeta,
     i: usize,
     record: &IHexRecord,
     row: &mut TableRow,
@@ -131,17 +138,8 @@ fn display_record(
     });
 
     row.col(|ui| match record {
-        IHexRecord::Data(data) => {
-            let found_val = meta.get_mut(data);
-
-            let meta_for_rec = match found_val {
-                Some(meta) => meta,
-                None => {
-                    meta.insert(data.clone(), DataRecordDisplayMeta::default());
-                    meta.get_mut(data).unwrap()
-                }
-            };
-
+            IHexRecord::Data(data) => {
+            let meta_for_rec = get_variant_or_panic!(meta, IHexRecordDisplayMeta::Data(data), data);
             display_data(i, meta_for_rec, data, ui)
         }
         IHexRecord::EndOfFile => (),
@@ -165,18 +163,20 @@ fn get_record_height(record: &IHexRecord) -> f32 {
     }
 }
 
-pub fn gui(gui: &mut Gui, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui) {
-    let hexfile = gui.file.as_ref().unwrap();
-
+fn data_tab(file: &IHexFile, meta: &mut DataTabMeta, ui: &mut Ui) {
     ui.spacing_mut().item_spacing.y += 3.0;
 
     ui.horizontal(|ui| {
-        display_mode_combobox("set_all_mode_box", &mut gui.set_all_to_mode, ui);
+        display_mode_combobox("set_all_mode_box", &mut meta.set_all_to_mode, ui);
 
         if ui.button("Set all").clicked() {
-            for (_, meta) in gui.data_display_meta.iter_mut() {
-                meta.display_mode = gui.set_all_to_mode.clone();
-            }
+            meta.record_meta
+                .iter_mut()
+                .filter_map(|meta| match meta {
+                    IHexRecordDisplayMeta::Data(meta) => Some(meta),
+                    _ => None,
+                })
+                .for_each(|mode| mode.displaymode = meta.set_all_to_mode.clone());
         }
     });
 
@@ -202,11 +202,25 @@ pub fn gui(gui: &mut Gui, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui) {
             });
         })
         .body(|body| {
-            let height_iter = hexfile.records.iter().map(get_record_height);
+            let height_iter = file.records.iter().map(get_record_height);
 
             body.heterogeneous_rows(height_iter, |mut row| {
-                let record = hexfile.records.get(row.index()).unwrap();
-                display_record(&mut gui.data_display_meta, row.index(), record, &mut row);
+                let record = file.records.get(row.index()).unwrap();
+                let record_meta = meta.record_meta.get_mut(row.index()).unwrap();
+
+                assert!(record_meta.check_matches(record));
+
+                display_record(record_meta, row.index(), record, &mut row);
             });
         });
+}
+
+pub fn gui(gui: &mut Gui, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui) {
+    let mainpanel = get_variant_or_panic!(gui, Gui::MainPanel(m), m);
+
+    let hexfile = &mainpanel.file;
+
+    match &mut mainpanel.tab {
+        MainPanelTab::Data => data_tab(hexfile, &mut mainpanel.meta.data, ui),
+    }
 }

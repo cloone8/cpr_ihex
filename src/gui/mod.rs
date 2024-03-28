@@ -33,22 +33,12 @@ impl DataDisplayMode {
     }
 }
 
-struct DataRecordDisplayMeta {
-    display_mode: DataDisplayMode,
-}
-
-impl Default for DataRecordDisplayMeta {
-    fn default() -> Self {
-        DataRecordDisplayMeta {
-            display_mode: DataDisplayMode::Bytes,
-        }
-    }
+struct DataDisplayMeta {
+    displaymode: DataDisplayMode,
 }
 
 enum IHexRecordDisplayMeta {
-    Data {
-        displaymode: DataDisplayMode,
-    },
+    Data(DataDisplayMeta),
     EndOfFile,
     ExtendedSegmentAddress,
     StartSegmentAddress,
@@ -70,9 +60,9 @@ impl IHexRecordDisplayMeta {
 
     fn default_for(record: &IHexRecord) -> Self {
         match record {
-            IHexRecord::Data(_) => IHexRecordDisplayMeta::Data {
+            IHexRecord::Data(_) => IHexRecordDisplayMeta::Data(DataDisplayMeta {
                 displaymode: DataDisplayMode::Bytes,
-            },
+            }),
             IHexRecord::EndOfFile => IHexRecordDisplayMeta::EndOfFile,
             IHexRecord::ExtendedSegmentAddress(_) => IHexRecordDisplayMeta::ExtendedSegmentAddress,
             IHexRecord::StartSegmentAddress(_) => IHexRecordDisplayMeta::StartSegmentAddress,
@@ -118,12 +108,13 @@ impl Gui {
     }
 
     pub fn file_opened(&mut self, file: IHexFile) {
+        let record_meta: Vec<_> = file.records.iter().map(IHexRecordDisplayMeta::default_for).collect();
         *self = Gui::MainPanel(MainPanel {
             file,
             tab: MainPanelTab::Data,
             meta: MainPanelMeta {
                 data: DataTabMeta {
-                    record_meta: file.records.iter().map(|r| IHexRecordDisplayMeta::default_for(r)).collect(),
+                    record_meta,
                     set_all_to_mode: DataDisplayMode::Bytes,
                 },
             },
