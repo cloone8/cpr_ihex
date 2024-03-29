@@ -6,6 +6,7 @@ This file will document the most important changes for each released version, st
 
 ### Features
 - Better CLI option handling. An invalid combination of options will now show an error immediately, instead of crashing halfway through the program.
+- Support for segment and linear extended base addresses for data records
 
 ## [v0.4.0]
 
