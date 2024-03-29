@@ -9,6 +9,22 @@ pub struct DataRecord {
     pub data: Vec<u8>,
 }
 
+impl DataRecord {
+    pub fn calc_effective_address(&self) -> u32 {
+        let linear_base: u32 = match &self.linear_address {
+            Some(linear) => (linear.address_base as u32) << 16,
+            None => 0,
+        };
+
+        let segment_base: u32 = match &self.segment_address {
+            Some(segment) => segment.segment_base as u32,
+            None => 0,
+        };
+
+        linear_base + segment_base + (self.naive_address as u32)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtendedSegmentAddressRecord {
     pub segment_base: usize,

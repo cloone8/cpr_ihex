@@ -1,15 +1,13 @@
 mod main_panel;
 mod open_file;
 
-use std::collections::HashMap;
-
 use eframe::{
     egui::{CentralPanel, Context},
     Frame,
 };
 use strum::EnumIter;
 
-use crate::record::{file::IHexFile, DataRecord, IHexRecord};
+use crate::record::{file::IHexFile, IHexRecord};
 
 #[derive(EnumIter, PartialEq, Eq, Clone)]
 enum DataDisplayMode {
@@ -137,7 +135,7 @@ impl eframe::App for Gui {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
         CentralPanel::default().show(ctx, |ui| match self {
             Gui::OpenFile => open_file::gui(self, ctx, frame, ui),
-            Gui::MainPanel(main_panel) => main_panel::gui(self, ctx, frame, ui),
+            Gui::MainPanel(main_panel) => main_panel::gui(main_panel, ctx, frame, ui),
         });
     }
 }

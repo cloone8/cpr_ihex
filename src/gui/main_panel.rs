@@ -5,7 +5,7 @@ use eframe::{
 };
 use egui_extras::{Column, TableBuilder, TableRow};
 use itertools::Itertools;
-use std::{collections::HashMap, hash::Hash};
+use std::hash::Hash;
 use strum::IntoEnumIterator;
 
 use crate::record::{
@@ -14,8 +14,7 @@ use crate::record::{
 };
 
 use super::{
-    DataDisplayMeta, DataDisplayMode, DataTabMeta, Gui, IHexRecordDisplayMeta, MainPanel,
-    MainPanelTab,
+    DataDisplayMeta, DataDisplayMode, DataTabMeta, IHexRecordDisplayMeta, MainPanel, MainPanelTab,
 };
 
 fn display_mode_combobox(id: impl Hash, curr: &mut DataDisplayMode, ui: &mut Ui) {
@@ -70,7 +69,12 @@ fn numvec_as_utf16_string(data: &[u8], endian: Endian) -> String {
 
 fn display_data(i: usize, meta: &mut DataDisplayMeta, record: &DataRecord, ui: &mut Ui) {
     ui.horizontal(|ui| {
-        ui.label(format!("Address: 0x{:x}", record.naive_address));
+        let effective_address = record.calc_effective_address();
+
+        ui.label(format!(
+            "Address: 0x{:x} (0x{:x})",
+            effective_address, record.naive_address
+        ));
         ui.add_space(5.0);
         ui.label(format!("{} bytes", record.data.len()));
         ui.add_space(5.0);
@@ -184,6 +188,14 @@ fn data_tab(file: &IHexFile, meta: &mut DataTabMeta, ui: &mut Ui) {
                 })
                 .for_each(|mode| mode.displaymode = meta.set_all_to_mode.clone());
         }
+
+        ui.add_space(5.0);
+
+        ui.label(format!("Total records: {}", file.records.len()));
+
+        ui.add_space(5.0);
+
+        ui.label(format!("File type: {}", file.filetype()));
     });
 
     let max_scroll_height = ui.available_height() - TABLE_ROW_HEIGHT;
@@ -221,9 +233,7 @@ fn data_tab(file: &IHexFile, meta: &mut DataTabMeta, ui: &mut Ui) {
         });
 }
 
-pub fn gui(gui: &mut Gui, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui) {
-    let mainpanel = get_variant_or_panic!(gui, Gui::MainPanel(m), m);
-
+pub fn gui(mainpanel: &mut MainPanel, _ctx: &Context, _frame: &mut Frame, ui: &mut Ui) {
     let hexfile = &mainpanel.file;
 
     match &mut mainpanel.tab {

@@ -20,21 +20,6 @@ macro_rules! expect_length {
     };
 }
 
-#[derive(Debug)]
-pub enum IHexBaseAddress {
-    Segment(u16),
-    Linear(u16),
-}
-
-impl IHexBaseAddress {
-    pub fn transform(&self, address: u16) -> u32 {
-        match self {
-            IHexBaseAddress::Segment(segment) => (address as u32) + (*segment as u32),
-            IHexBaseAddress::Linear(linear) => ((*linear as u32) << 16) | address as u32,
-        }
-    }
-}
-
 struct BaseAddrs {
     segment: Option<ExtendedSegmentAddressRecord>,
     linear: Option<ExtendedLinearAddressRecord>,
@@ -50,6 +35,16 @@ pub enum IHexFileType {
     IHex8 = 8,
     IHex16 = 16,
     IHex32 = 32,
+}
+
+impl Display for IHexFileType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            IHexFileType::IHex8 => write!(f, "8-bit"),
+            IHexFileType::IHex16 => write!(f, "16-bit"),
+            IHexFileType::IHex32 => write!(f, "32-bit"),
+        }
+    }
 }
 
 impl IHexFile {
@@ -71,18 +66,6 @@ impl IHexFile {
         }
 
         filetype
-    }
-
-    pub fn is_32_bit(&self) -> bool {
-        self.filetype() == IHexFileType::IHex32
-    }
-
-    pub fn is_16_bit(&self) -> bool {
-        self.filetype() == IHexFileType::IHex16
-    }
-
-    pub fn is_8_bit(&self) -> bool {
-        self.filetype() == IHexFileType::IHex8
     }
 
     pub fn read<T: BufRead>(lines: Lines<T>) -> Result<Self> {
@@ -168,7 +151,7 @@ impl IHexFile {
                 expect_length!(value.data, 2);
                 let segment_base = to_u16_be!(value.data);
                 IHexRecord::ExtendedSegmentAddress(ExtendedSegmentAddressRecord {
-                    segment_base: (segment_base as usize) * 16,
+                    segment_base: (segment_base as usize) << 4,
                 })
             }
             3 => {
