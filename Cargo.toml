@@ -25,14 +25,14 @@ lto = "thin"
 
 [dependencies]
 log = { version = "0.4.21", features = ["std", "release_max_level_info"] }
-clap = { version = "4.5.3", features = ["derive"] }
-eframe = "0.26.2"
+clap = { version = "4.5.4", features = ["derive"] }
+eframe = "0.27.1"
 hex = "0.4.3"
 simplelog = "0.12.2"
 anyhow = "1.0.81"
 color-backtrace = "0.6.1"
 rfd = "0.14.1"
-egui_extras = "0.26.2"
+egui_extras = "0.27.1"
 strum = { version = "0.26.2", features = ["derive"] }
 itertools = "0.12.1"
 pretty-hex = "0.4.1"
