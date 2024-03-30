@@ -2,6 +2,11 @@
 
 This file will document the most important changes for each released version, starting from version 0.4.0
 
+## [v1.0.0]
+
+### Features
+- Add support for showing the hexfile start address in the main GUI
+
 ## [v0.5.1]
 
 ### Bugfixes

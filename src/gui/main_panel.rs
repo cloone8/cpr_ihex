@@ -9,8 +9,9 @@ use std::hash::Hash;
 use strum::IntoEnumIterator;
 
 use crate::record::{
-    file::IHexFile, DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord,
-    IHexRecord, StartLinearAddressRecord, StartSegmentAddressRecord,
+    file::{IHexFile, StartAddr},
+    DataRecord, ExtendedLinearAddressRecord, ExtendedSegmentAddressRecord, IHexRecord,
+    StartLinearAddressRecord, StartSegmentAddressRecord,
 };
 
 use super::{
@@ -196,6 +197,22 @@ fn data_tab(file: &IHexFile, meta: &mut DataTabMeta, ui: &mut Ui) {
         ui.add_space(5.0);
 
         ui.label(format!("File type: {}", file.filetype()));
+
+        if let Some(start_addr) = file.start_address() {
+            ui.add_space(5.0);
+
+            match start_addr {
+                StartAddr::Segment(addr) => {
+                    ui.label(format!(
+                        "Start address: CS 0x{:x} - IP 0x{:x}",
+                        addr.code_segment, addr.instruction_pointer
+                    ));
+                }
+                StartAddr::Linear(addr) => {
+                    ui.label(format!("Start address: 0x{:x}", addr));
+                }
+            }
+        }
     });
 
     let max_scroll_height = ui.available_height() - TABLE_ROW_HEIGHT;

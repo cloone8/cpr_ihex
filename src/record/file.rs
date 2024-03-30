@@ -25,9 +25,23 @@ struct BaseAddrs {
     linear: Option<ExtendedLinearAddressRecord>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct SegmentStartAddr {
+    pub code_segment: u16,
+    pub instruction_pointer: u16,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum StartAddr {
+    Segment(SegmentStartAddr),
+    Linear(u32),
+}
+
 #[derive(Debug)]
 pub struct IHexFile {
     pub records: Vec<IHexRecord>,
+    filetype: IHexFileType,
+    start_address: Option<StartAddr>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -49,9 +63,17 @@ impl Display for IHexFileType {
 
 impl IHexFile {
     pub fn filetype(&self) -> IHexFileType {
+        self.filetype
+    }
+
+    pub fn start_address(&self) -> Option<StartAddr> {
+        self.start_address
+    }
+
+    fn determine_filetype(records: &Vec<IHexRecord>) -> IHexFileType {
         let mut filetype = IHexFileType::IHex8;
 
-        for record in &self.records {
+        for record in records {
             match record {
                 IHexRecord::ExtendedSegmentAddress(_) => {
                     filetype = filetype.max(IHexFileType::IHex16)
@@ -77,17 +99,23 @@ impl IHexFile {
             raw_records.push(record);
         }
 
-        let mut ihex_file = IHexFile {
-            records: Vec::with_capacity(raw_records.len()),
-        };
         let mut bases = BaseAddrs {
             segment: None,
             linear: None,
         };
 
+        let mut records = Vec::with_capacity(raw_records.len());
+        let mut start_addr: Option<StartAddr> = None;
+
         for raw_record in raw_records {
-            ihex_file.parse_and_append(raw_record, &mut bases)?;
+            Self::parse_and_append(&mut records, raw_record, &mut bases, &mut start_addr)?;
         }
+
+        let ihex_file = IHexFile {
+            filetype: Self::determine_filetype(&records),
+            records,
+            start_address: start_addr,
+        };
 
         Ok(ihex_file)
     }
@@ -117,9 +145,10 @@ impl IHexFile {
     }
 
     fn parse_and_append(
-        &mut self,
+        records: &mut Vec<IHexRecord>,
         value: RawIHexRecord,
         bases: &mut BaseAddrs,
+        start_addr: &mut Option<StartAddr>,
     ) -> Result<(), InvalidIHexRecordError> {
         if !value.checksum_valid() {
             return Err(InvalidIHexRecordError::Checksum);
@@ -144,6 +173,17 @@ impl IHexFile {
                 expect_length!(value.data, 4);
                 let code_segment = to_u16_be!(value.data[0..2].to_vec());
                 let instruction_pointer = to_u16_be!(value.data[2..].to_vec());
+
+                match start_addr {
+                    Some(prev) => log::warn!("Multiple start addresses found in IHex file, overwriting previous start address ({:?})", prev),
+                    None => {
+                        *start_addr = Some(StartAddr::Segment(SegmentStartAddr {
+                            code_segment,
+                            instruction_pointer,
+                        }));
+                    }
+                }
+
                 IHexRecord::StartSegmentAddress(StartSegmentAddressRecord {
                     code_segment,
                     instruction_pointer,
@@ -158,6 +198,14 @@ impl IHexFile {
                 expect_length!(value.data, 4);
 
                 let entry_point = to_u32_be!(value.data);
+
+                match start_addr {
+                    Some(prev) => log::warn!("Multiple start addresses found in IHex file, overwriting previous start address ({:?})", prev),
+                    None => {
+                        *start_addr = Some(StartAddr::Linear(entry_point));
+                    }
+                }
+
                 IHexRecord::StartLinearAddress(StartLinearAddressRecord { entry_point })
             }
             _ => return Err(InvalidIHexRecordError::RecordType),
@@ -173,7 +221,7 @@ impl IHexFile {
             _ => {}
         }
 
-        self.records.push(rec);
+        records.push(rec);
 
         Ok(())
     }
