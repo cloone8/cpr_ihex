@@ -1,5 +1,4 @@
 mod cli;
-// mod gui;
 mod gui;
 mod record;
 mod utils;
@@ -7,7 +6,6 @@ use anyhow::{anyhow, Result};
 use cli::{args::CLIArgs, commands::run_commands};
 use gui::Gui;
 use record::file::IHexFile;
-// use gui::Gui;
 
 use std::{
     fs::File,
