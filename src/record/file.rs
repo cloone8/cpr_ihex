@@ -93,22 +93,6 @@ impl IHexFile {
     }
 
     pub fn data_bytes(&self) -> Vec<u8> {
-        if self
-            .records
-            .iter()
-            .any(|record| matches!(record, IHexRecord::ExtendedLinearAddress(_)))
-        {
-            panic!("Extended linear address records are not supported yet");
-        }
-
-        if self
-            .records
-            .iter()
-            .any(|record| matches!(record, IHexRecord::ExtendedSegmentAddress(_)))
-        {
-            panic!("Extended segment address records are not supported yet");
-        }
-
         let records: Vec<_> = self
             .records
             .iter()
@@ -121,9 +105,11 @@ impl IHexFile {
         let mut data = Vec::new();
 
         for record in records {
-            data.resize(record.naive_address as usize + record.data.len(), 0);
+            let effective_addr = record.calc_effective_address();
+
+            data.resize(effective_addr as usize + record.data.len(), 0);
             for (i, byte) in record.data.iter().enumerate() {
-                data[record.naive_address as usize + i] = *byte;
+                data[effective_addr as usize + i] = *byte;
             }
         }
 

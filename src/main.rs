@@ -57,7 +57,9 @@ fn main() -> Result<()> {
         None => None,
     };
 
-    run_commands(&args, parsed_file.as_ref())?;
+    if run_commands(&args, parsed_file.as_ref())? {
+        return Ok(());
+    }
 
     let native_options = NativeOptions {
         viewport: ViewportBuilder::default()

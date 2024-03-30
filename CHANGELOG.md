@@ -2,6 +2,12 @@
 
 This file will document the most important changes for each released version, starting from version 0.4.0
 
+## [v0.5.1]
+
+### Bugfixes
+- Fixed a bug where the GUI would still open even if a CLI command was issued
+- Fixed a bug where the program would crash if a binary or hexdump command was issued while the hexfile contained extender segment or linear address records
+
 ## [v0.5.0]
 
 ### Features
