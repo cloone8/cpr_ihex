@@ -4,9 +4,11 @@ description = "A graphical parser and editor for the Intel HEX binary format."
 authors = ["Wouter de Bruijn <wouter@wutru.io>"]
 homepage = "https://github.com/cloone8/cpr_ihex"
 repository = "https://github.com/cloone8/cpr_ihex"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 license = "MPL-2.0"
+keywords = ["hex", "intel", "ihex", "gui"]
+categories = ["encoding", "parser-implementations"]
 
 [profile.release]
 codegen-units = 1
